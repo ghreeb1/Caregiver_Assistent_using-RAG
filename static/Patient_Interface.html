@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Interface</title>
+    <style>
+        /* Base and Layout Styles from File 1 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, "Helvetica Neue", Arial, sans-serif; background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%); min-height: 100vh; color: #333; direction: ltr; }
+        .header { background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%); color: white; padding: 1rem 2rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); }
+        .header-content { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 1.8rem; display: flex; align-items: center; gap: 10px; }
+        .nav-links { display: flex; gap: 1rem; }
+        .nav-btn { background: rgba(255, 255, 255, 0.2); border: none; color: white; padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; text-decoration: none; font-size: 0.9rem; }
+        .nav-btn:hover { background: rgba(255, 255, 255, 0.3); transform: translateY(-2px); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .welcome-section { background: white; border-radius: 20px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); text-align: center; }
+        .welcome-section h2 { color: #e84393; font-size: 2rem; margin-bottom: 1rem; }
+        .welcome-section p { font-size: 1.1rem; color: #666; margin-bottom: 1.5rem; }
+        .activity-tabs { display: flex; background: white; border-radius: 15px; padding: 0.5rem; margin-bottom: 2rem; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); overflow-x: auto; }
+        .activity-tab { flex: 1; min-width: 120px; background: transparent; border: none; padding: 1rem; border-radius: 10px; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem; font-weight: 500; text-align: center; }
+        .activity-tab.active { background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%); color: white; box-shadow: 0 4px 15px rgba(253, 121, 168, 0.4); }
+        .activity-content { display: none; animation: fadeIn 0.5s ease-in; }
+        .activity-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- NEW CHAT STYLES (from File 2, adapted for layout) --- */
+        .chat-container {
+            width: 100%; /* Take full width of parent */
+            height: 600px; /* Consistent height with original design */
+            background-color: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            margin-top: 2rem; /* Space from starter cards */
+        }
+        .chat-header { padding: 20px; text-align: center; border-bottom: 1px solid #eaeaea; flex-shrink: 0; background: white; }
+        .chat-header h1 { margin: 0; font-size: 1.5rem; font-weight: 600; color: #8b5cf6; } /* Purple color from File 2 */
+        .chat-messages { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        .message { padding: 10px 15px; border-radius: 18px; max-width: 75%; word-wrap: break-word; white-space: pre-wrap; line-height: 1.4; }
+        .user-message { background-color: #8b5cf6; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .bot-message { background-color: #f1f1f1; color: #333; align-self: flex-start; border-bottom-left-radius: 4px; }
+        .loading-dots span { display: inline-block; width: 8px; height: 8px; background-color: #999; border-radius: 50%; animation: typing 1.4s infinite; }
+        .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .chat-input-area { display: flex; align-items: center; padding: 12px 20px; border-top: 1px solid #eaeaea; background-color: #ffffff; flex-shrink: 0; }
+        .chat-input { flex-grow: 1; border: 1px solid #e0e0e0; border-radius: 20px; padding: 10px 20px; font-size: 1rem; outline: none; transition: border-color 0.2s; }
+        .chat-input::placeholder { color: #b0b0b0; }
+        .chat-input:focus { border-color: #8b5cf6; }
+        .chat-button { background-color: #8b5cf6; border: none; border-radius: 50%; width: 40px; height: 40px; margin-left: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; transition: background-color 0.2s; flex-shrink: 0; }
+        .chat-button:hover { background-color: #7c3aed; }
+        .chat-button svg { width: 22px; height: 22px; }
+
+        /* Styles for conversation starters and other tabs */
+        .conversation-starters { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
+        .starter-card { background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 15px; padding: 1.5rem; cursor: pointer; transition: all 0.3s ease; text-align: left; }
+        .starter-card:hover { border-color: #8b5cf6; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); }
+        .starter-card h4 { color: #e84393; margin-bottom: 0.5rem; }
+        .game-container, .story-container { background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); text-align: center; }
+        .game-title { color: #e84393; font-size: 1.8rem; margin-bottom: 1rem; }
+        .game-description { color: #666; margin-bottom: 2rem; font-size: 1.1rem; }
+        .game-controls { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin: 2rem 0; }
+        .game-btn { background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%); color: white; border: none; padding: 1rem 2rem; border-radius: 25px; cursor: pointer; font-size: 1rem; transition: all 0.3s ease; min-width: 120px; }
+        .game-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(253, 121, 168, 0.4); }
+        .game-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+        .color-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 1rem; max-width: 400px; margin: 2rem auto; }
+        .color-btn { padding: 2rem; border: none; border-radius: 15px; cursor: pointer; font-size: 2rem; transition: all 0.3s ease; }
+        .color-btn:hover { transform: scale(1.1); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); }
+        .sequence-display { background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 15px; padding: 2rem; margin: 2rem 0; font-size: 1.5rem; min-height: 100px; display: flex; align-items: center; justify-content: center; gap: 1rem; text-align: center; }
+        .math-question { background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 15px; padding: 2rem; margin: 2rem 0; font-size: 1.2rem; line-height: 1.6; color: #333; }
+        .math-input { padding: 1rem; font-size: 1.2rem; border: 2px solid #e9ecef; border-radius: 10px; width: 200px; text-align: center; margin: 0 1rem; }
+        .math-input:focus { border-color: #fd79a8; outline: none; }
+        .score-display, .final-score { background: #e8f5e8; border: 2px solid #4caf50; border-radius: 10px; padding: 1rem; margin: 1rem auto; color: #2e7d32; font-weight: bold; max-width: 400px; }
+        .story-text { background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 15px; padding: 2rem; margin: 2rem 0; min-height: 200px; font-size: 1.1rem; line-height: 1.8; text-align: left;}
+        .story-input, .word-input { width: 100%; padding: 1rem; border: 2px solid #e9ecef; border-radius: 10px; font-size: 1rem; margin-bottom: 1rem; }
+        .story-input:focus, .word-input:focus { border-color: #fd79a8; outline: none; }
+        .alert { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 1rem 2rem; border-radius: 10px; z-index: 1000; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .alert-success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .alert-error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .loading { display: inline-block; width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid #fd79a8; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .breathing-exercise { text-align: center; padding: 2rem; }
+        .breathing-circle { width: 200px; height: 200px; border: 4px solid #fd79a8; border-radius: 50%; margin: 2rem auto; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #e84393; transition: all 4s ease-in-out; }
+        .breathing-circle.inhale { transform: scale(1.3); }
+        .breathing-circle.exhale { transform: scale(0.8); }
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .header-content { flex-direction: column; gap: 1rem; }
+            .nav-links { flex-wrap: wrap; justify-content: center; }
+            .activity-tabs { flex-direction: column; }
+            .chat-container { height: 500px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content"><h1>🏥 Patient Care Interface</h1><div class="nav-links"><button class="nav-btn">Profile</button><button class="nav-btn">Settings</button><button class="nav-btn">Help</button></div></div>
+    </header>
+    <div class="container">
+        <div class="welcome-section"><h2>Welcome to Your Healing Space</h2><p>This is your personal space for recovery, engagement, and well-being. Choose an activity below to get started.</p></div>
+        <div class="activity-tabs">
+            <button class="activity-tab active" onclick="switchTab(event, 'chat')">💬 Chat Assistant</button>
+            <button class="activity-tab" onclick="switchTab(event, 'games')">🎮 Mind Games</button>
+            <button class="activity-tab" onclick="switchTab(event, 'stories')">📚 Interactive Stories</button>
+            <button class="activity-tab" onclick="switchTab(event, 'relaxation')">🧘 Relaxation</button>
+        </div>
+        
+        <!-- Chat Assistant Tab (NEW IMPLEMENTATION) -->
+        <div id="chat" class="activity-content active">
+            <div class="conversation-starters">
+                <div class="starter-card" onclick="startConversation('How are you feeling today?')"><h4>🌟 Daily Check-in</h4><p>Share how you're feeling and what's on your mind today.</p></div>
+                <div class="starter-card" onclick="startConversation('I need help with pain management')"><h4>💊 Pain Management</h4><p>Get support and tips for managing discomfort.</p></div>
+                <div class="starter-card" onclick="startConversation('I feel anxious')"><h4>😰 Anxiety Support</h4><p>Talk through anxious feelings with caring support.</p></div>
+                <div class="starter-card" onclick="startConversation('Tell me something positive')"><h4>☀️ Positive Thoughts</h4><p>Brighten your day with uplifting messages.</p></div>
+            </div>
+            <div class="chat-container">
+                <div class="chat-header">
+                  <h1>Caregiver Chatbot</h1>
+                </div>
+                <div id="chat-messages" class="chat-messages">
+                    <!-- Bot greeting can be added here or on first load via JS -->
+                     <div class="message bot-message">Hello! I'm here to support you. How can I help you today? 😊</div>
+                </div>
+                <div class="chat-input-area">
+                  <input type="text" id="userInput" class="chat-input" placeholder="Type your message...">
+                  <button class="chat-button" aria-label="Use microphone">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM18.9 12a1 1 0 0 0-1-1h-.5a1 1 0 0 0 0 2h.5a1 1 0 0 0 1-1z"></path><path d="M16 12h-1a3 3 0 0 1-6 0H8a8 8 0 0 0 7 7.93V22h2v-2.07A8 8 0 0 0 16 12z"></path></svg>
+                  </button>
+                  <button class="chat-button" onclick="sendMessage()" aria-label="Send message">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" /></svg>      
+                  </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Games Tab -->
+        <div id="games" class="activity-content"><div class="game-container"><h2 class="game-title">🎮 Cognitive Enhancement Games</h2><p class="game-description">Exercise your mind with these fun and therapeutic games designed to boost cognitive function.</p><div id="gameControls" class="game-controls"><button class="game-btn" onclick="startMemoryGame()">🧠 Memory Game</button><button class="game-btn" onclick="startMathGame()">🔢 Math Challenge</button><button class="game-btn" onclick="startWordGame()">📝 Word Association</button></div><div id="gameArea" style="margin-top: 2rem;"><p>Select a game to begin your cognitive exercise session!</p></div></div></div>
+        
+        <!-- Stories Tab -->
+        <div id="stories" class="activity-content"><div class="story-container"><h2 class="game-title">📚 Interactive Story Time</h2><p class="game-description">Engage your imagination with interactive stories that you help create.</p><div class="game-controls"><button class="game-btn" onclick="startStory('adventure')">🗺️ Adventure Story</button><button class="game-btn" onclick="startStory('mystery')">🔍 Mystery Story</button><button class="game-btn" onclick="startStory('fantasy')">🐉 Fantasy Story</button></div><div class="story-text" id="storyText">Choose a story type above to begin your interactive narrative journey!</div><div id="storyControls" style="display: none;"><div id="storyOptions"></div><input type="text" class="story-input" id="storyInput" placeholder="What happens next? Enter your choice..."><button class="game-btn" onclick="continueStory()">Continue Story</button></div></div></div>
+        
+        <!-- Relaxation Tab -->
+        <div id="relaxation" class="activity-content"><div class="story-container"><h2 class="game-title">🧘 Relaxation & Wellness</h2><p class="game-description">Take a moment to relax and center yourself with these calming exercises.</p><div class="game-controls"><button class="game-btn" onclick="startBreathing()">🫁 Breathing Exercise</button><button class="game-btn" onclick="startMeditation()">🧘 Guided Meditation</button><button class="game-btn" onclick="startNatureSounds()">🌿 Nature Sounds</button></div><div id="relaxationArea">Select a relaxation exercise to begin.</div></div></div>
+    </div>
+    <script>
+        const API_URL = ''; // Relative path for Games/Stories API
+        let gameState = {};
+        let breathingInterval = null;
+        let breathingActive = false;
+
+        // --- Helper Functions ---
+        async function apiFetch(endpoint, options = {}) {
+            try {
+                const response = await fetch(`${API_URL}/api${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    ...options,
+                });
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ detail: 'An unknown server error occurred.' }));
+                    throw new Error(errorData.detail || 'An API error occurred.');
+                }
+                return options.method === 'GET' && response.status === 204 ? null : await response.json();
+            } catch (error) {
+                console.error(`API Fetch Error at ${endpoint}:`, error);
+                showAlert(error.message, 'error');
+                throw error;
+            }
+        }
+
+        function showAlert(message, type = 'success', duration = 3000) {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            document.body.appendChild(alert);
+            setTimeout(() => alert.remove(), duration);
+        }
+
+        function switchTab(event, tabName) {
+            document.querySelectorAll('.activity-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.activity-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        // --- NEW CHAT ASSISTANT (Server-Connected) ---
+        document.getElementById("userInput").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+
+        function startConversation(message) {
+            // Programmatically switch to the chat tab
+            const tabButtons = document.querySelectorAll('.activity-tab');
+            const contentPanes = document.querySelectorAll('.activity-content');
+            tabButtons.forEach(t => t.classList.remove('active'));
+            contentPanes.forEach(c => c.classList.remove('active'));
+
+            const chatTab = document.querySelector('.activity-tab[onclick*="chat"]');
+            const chatContent = document.getElementById('chat');
+            if (chatTab) chatTab.classList.add('active');
+            if (chatContent) chatContent.classList.add('active');
+            
+            // Set input value and send message after a brief delay for rendering
+            setTimeout(() => {
+                const inputElement = document.getElementById('userInput');
+                if (inputElement) {
+                    inputElement.value = message;
+                    sendMessage();
+                    inputElement.focus();
+                }
+            }, 100);
+        }
+
+        function addMessage(content, className, isHtml = false) {
+            const messagesContainer = document.getElementById("chat-messages");
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${className}`;
+            
+            if (isHtml) {
+                messageDiv.innerHTML = content;
+            } else {
+                messageDiv.textContent = content;
+            }
+
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            return messageDiv; // Return the created element
+        }
+
+        async function sendMessage() {
+            const inputElement = document.getElementById("userInput");
+            const input = inputElement.value;
+            if (!input.trim()) return; 
+
+            // Add user's message
+            addMessage(input, 'user-message');
+            const userInputValue = inputElement.value;
+            inputElement.value = "";
+            
+            // Add bot's message bubble with a loading indicator
+            const botMessageDiv = addMessage('<div class="loading-dots"><span></span><span></span><span></span></div>', 'bot-message', true);
+
+            try {
+                // IMPORTANT: This uses the URL from the second file.
+                // Make sure your backend chat server is running at this address.
+                const response = await fetch("http://127.0.0.1:8000/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ query: userInputValue }),
+                });
+
+                if (!response.body) {
+                    botMessageDiv.textContent = "Error: No response body from server.";
+                    return;
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let done = false;
+                let isFirstChunk = true;
+
+                while (!done) {
+                    const { value, done: readerDone } = await reader.read();
+                    done = readerDone;
+                    const chunk = decoder.decode(value, { stream: true });
+                    
+                    if (isFirstChunk) {
+                        botMessageDiv.innerHTML = ''; // Clear loading dots on first chunk
+                        isFirstChunk = false;
+                    }
+                    botMessageDiv.textContent += chunk; // Append streamed text
+                    
+                    // Keep scrolling down as new content arrives
+                    document.getElementById("chat-messages").scrollTop = document.getElementById("chat-messages").scrollHeight;
+                }
+            } catch (error) {
+                botMessageDiv.textContent = "Failed to connect to the assistant. Please check your connection or try again later.";
+                console.error("Chat Error:", error);
+            }
+        }
+        
+        // --- Memory Game ---
+        async function startMemoryGame(difficulty = 'medium') {
+            const gameArea = document.getElementById('gameArea');
+            const gameControls = document.getElementById('gameControls');
+            gameArea.innerHTML = `<div class="loading"></div> <p>Starting memory game...</p>`;
+            gameControls.querySelectorAll('button').forEach(b => b.disabled = true);
+            try {
+                const data = await apiFetch('/games/memory/start', { body: JSON.stringify({ game_type: 'memory', difficulty }) });
+                gameState = { id: data.game_id, sequence: data.sequence, playerSequence: [], round: data.round, score: 0 };
+                const colorsHtml = data.colors.map(color => `<button class="color-btn" style="background:${color};" onclick="playerInput('${color}')"></button>`).join('');
+                gameArea.innerHTML = `<h3>🧠 Memory Challenge - Round ${data.round}</h3><p>${data.message}</p><div class="sequence-display" id="sequenceDisplay">Get Ready...</div><div class="color-buttons">${colorsHtml}</div><div class="score-display">Score: 0</div>`;
+                setTimeout(playMemorySequence, 1500);
+            } catch (error) {
+                gameArea.innerHTML = `<p>Could not start game. Please try again.</p>`;
+                gameControls.querySelectorAll('button').forEach(b => b.disabled = false);
+            }
+        }
+        function playMemorySequence() {
+            const display = document.getElementById('sequenceDisplay');
+            if(!display) return;
+            display.innerHTML = 'Watch...';
+            gameState.isShowingSequence = true;
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i < gameState.sequence.length) {
+                    display.style.background = gameState.sequence[i];
+                    setTimeout(() => { display.style.background = '#f8f9fa'; }, 600);
+                    i++;
+                } else {
+                    clearInterval(interval);
+                    gameState.isShowingSequence = false;
+                    display.innerHTML = 'Your Turn!';
+                }
+            }, 1000);
+        }
+        async function playerInput(color) {
+            if (gameState.isShowingSequence) return;
+            gameState.playerSequence.push(color);
+            if (gameState.playerSequence.length === gameState.sequence.length) {
+                gameState.isShowingSequence = true;
+                document.getElementById('sequenceDisplay').innerHTML = `<div class="loading"></div>`;
+                try {
+                    const data = await apiFetch('/games/memory/action', { body: JSON.stringify({ game_id: gameState.id, action: 'submit', data: { sequence: gameState.playerSequence }}) });
+                    if (data.correct) {
+                        gameState.sequence = data.new_sequence; gameState.round = data.round; gameState.score = data.score; gameState.playerSequence = [];
+                        document.querySelector('h3').textContent = `🧠 Memory Challenge - Round ${data.round}`;
+                        document.querySelector('.score-display').textContent = `Score: ${data.score}`;
+                        document.getElementById('sequenceDisplay').innerHTML = `✅ Correct! ${data.message}`;
+                        setTimeout(playMemorySequence, 2000);
+                    } else {
+                        document.getElementById('gameArea').innerHTML = `<h3>🧠 Game Over</h3><p>${data.message}</p><p><strong>${data.encouragement}</strong></p><div class="final-score">Final Score: ${data.final_score}</div>`;
+                        document.getElementById('gameControls').querySelectorAll('button').forEach(b => b.disabled = false);
+                    }
+                } catch(e) { document.getElementById('gameControls').querySelectorAll('button').forEach(b => b.disabled = false); }
+            }
+        }
+        
+        // --- Math Game ---
+        async function startMathGame(difficulty = 'medium') {
+            const gameArea = document.getElementById('gameArea');
+            const gameControls = document.getElementById('gameControls');
+            gameArea.innerHTML = `<div class="loading"></div> <p>Starting math challenge...</p>`;
+            gameControls.querySelectorAll('button').forEach(b => b.disabled = true);
+            try {
+                const data = await apiFetch('/games/math/start', { body: JSON.stringify({ game_type: 'math', difficulty }) });
+                gameState = { id: data.game_id, score: 0, qNum: 1, totalQ: data.total_questions };
+                renderMathQuestion(data.problem, 1, 0, data.total_questions);
+            } catch(e) { gameArea.innerHTML = `<p>Could not start game. Please try again.</p>`; gameControls.querySelectorAll('button').forEach(b => b.disabled = false);}
+        }
+        function renderMathQuestion(problem, qNum, score, totalQ) {
+            const gameArea = document.getElementById('gameArea');
+            gameArea.innerHTML = `<h3>🔢 Math Challenge</h3><p>Question ${qNum} of ${totalQ}</p><div class="math-question">${problem.context}</div><div><input type="number" class="math-input" id="mathAnswer" placeholder="?" onkeypress="if(event.key==='Enter') checkMathAnswer()"><button class="game-btn" onclick="checkMathAnswer()">Submit</button></div><div class="score-display">Score: ${score}/${qNum - 1}</div>`;
+            document.getElementById('mathAnswer').focus();
+        }
+        async function checkMathAnswer() {
+            const answer = parseInt(document.getElementById('mathAnswer').value);
+            if(isNaN(answer)) { return showAlert('Please enter a number.', 'error'); }
+            try {
+                const data = await apiFetch('/games/math/answer', { body: JSON.stringify({ game_id: gameState.id, action: 'answer', data: { answer } }) });
+                if(data.correct) { showAlert('Correct! 🎉', 'success'); }
+                else { showAlert(`Not quite. The correct answer was ${data.correct_answer}. Keep trying! 💪`, 'error'); }
+                if (data.game_complete) {
+                    document.getElementById('gameArea').innerHTML = `<h3>🎉 Challenge Complete!</h3><p>${data.message}</p><div class="final-score">Final Score: ${data.final_score}/${gameState.totalQ}</div>`;
+                    document.getElementById('gameControls').querySelectorAll('button').forEach(b => b.disabled = false);
+                } else {
+                    showAlert(data.encouragement);
+                    renderMathQuestion(data.next_problem, data.question_number, data.current_score, gameState.totalQ);
+                }
+            } catch (e) { document.getElementById('gameControls').querySelectorAll('button').forEach(b => b.disabled = false);}
+        }
+
+        // --- Word Game ---
+        async function startWordGame(difficulty = 'medium') {
+            const gameArea = document.getElementById('gameArea');
+            const gameControls = document.getElementById('gameControls');
+            gameArea.innerHTML = `<div class="loading"></div>`;
+            gameControls.querySelectorAll('button').forEach(b => b.disabled = true);
+            try {
+                const data = await apiFetch('/games/words/start', { body: JSON.stringify({ game_type: 'words', difficulty }) });
+                gameState = { id: data.game_id, associations: [] };
+                gameArea.innerHTML = `<h3>📝 Word Association</h3><p>${data.hints[0]}</p><div class="math-question" style="color: #e84393; font-weight: bold;">${data.base_word}</div><div><input type="text" class="word-input" id="wordInput" placeholder="Enter an associated word..." onkeypress="if(event.key==='Enter') addAssociation()"><button class="game-btn" onclick="addAssociation()">Add Word</button></div><div id="wordList" class="sequence-display" style="flex-wrap: wrap;">Your words appear here...</div>`;
+                gameControls.querySelectorAll('button').forEach(b => b.disabled = false);
+                document.getElementById('wordInput').focus();
+            } catch(e) { gameArea.innerHTML = `<p>Could not start game.</p>`; gameControls.querySelectorAll('button').forEach(b => b.disabled = false);}
+        }
+        async function addAssociation() {
+            const wordInput = document.getElementById('wordInput');
+            if (!wordInput.value.trim()) return;
+            try {
+                const data = await apiFetch('/games/words/add', { body: JSON.stringify({ game_id: gameState.id, action: 'add', data: { word: wordInput.value } }) });
+                showAlert(data.message, data.success ? 'success' : 'error');
+                const wordList = document.getElementById('wordList');
+                gameState.associations = data.associations;
+                wordList.innerHTML = gameState.associations.map(w => `<span style="background:#fd79a8;color:white;padding:0.5rem 1rem;margin:0.25rem;border-radius:20px;">${w}</span>`).join('');
+                wordInput.value = '';
+                wordInput.focus();
+            } catch(e) { /* ignore */ }
+        }
+
+        // --- Story Time ---
+        async function startStory(type) {
+            const storyText = document.getElementById('storyText');
+            storyText.innerHTML = `<div class="loading"></div>`;
+            try {
+                const data = await apiFetch('/stories/start', { body: JSON.stringify({ story_type: type }) });
+                gameState = { id: data.story_id, type: data.story_type };
+                storyText.innerHTML = `<h3 style="margin-bottom:1rem;color:#e84393;">${type.charAt(0).toUpperCase() + type.slice(1)} Story</h3><p>${data.opening_text}</p>`;
+                renderStoryOptions(data.suggested_actions);
+                document.getElementById('storyControls').style.display = 'block';
+                document.getElementById('storyInput').focus();
+            } catch(e) { storyText.innerHTML = `Error starting story.` }
+        }
+        async function continueStory() {
+            const input = document.getElementById('storyInput');
+            if (!input.value.trim()) return;
+            const choice = input.value;
+            input.value = ''; input.disabled = true;
+            try {
+                const data = await apiFetch('/stories/continue', { body: JSON.stringify({ story_id: gameState.id, story_type: gameState.type, user_input: choice }) });
+                const storyText = document.getElementById('storyText');
+                storyText.innerHTML += `<div style="margin-top:1.5rem;padding:1rem;background:#f8f9fa;border-left:4px solid #fd79a8;border-radius:10px;"><strong>You chose to:</strong> ${choice}<br><br><em>${data.story_text}</em><br><br><strong style="color:#e84393;">${data.healing_message}</strong></div>`;
+                renderStoryOptions(data.options);
+                storyText.scrollTop = storyText.scrollHeight;
+            } catch (e) { /* handle */ }
+            input.disabled = false; input.focus();
+        }
+        function renderStoryOptions(options) {
+            const optionsDiv = document.getElementById('storyOptions');
+            optionsDiv.innerHTML = `<p style="margin-bottom:0.5rem; text-align:left;"><strong>Some ideas for what to do next:</strong></p>`
+            optionsDiv.innerHTML += options.map(opt => `<button class="game-btn" style="background:#f8f9fa;color:#333;border:1px solid #ddd; margin: 4px;" onclick="document.getElementById('storyInput').value='${opt}'; continueStory()">${opt}</button>`).join('');
+        }
+        
+        // --- Relaxation ---
+        async function startBreathing() {
+            const area = document.getElementById('relaxationArea');
+            area.innerHTML = `<div class="loading"></div>`;
+            try {
+                const data = await apiFetch('/relaxation/breathing', { body: JSON.stringify({ exercise_type: 'balance' }) });
+                gameState.breathing = data.pattern_info;
+                area.innerHTML = `<div class="breathing-exercise"><h3 style="color:#e84393">${data.pattern_info.description}</h3><div class="breathing-circle" id="breathingCircle"><span id="breathingText">Ready?</span></div><p id="breathingInstructions">${data.instructions}</p><button class="game-btn" id="breathingBtn" onclick="toggleBreathing()">Start Breathing</button></div>`;
+            } catch (e) { area.innerHTML = `<p>Error loading exercise.</p>`;}
+        }
+        function toggleBreathing() { breathingActive ? stopBreathing() : runBreathingCycle(); }
+        function runBreathingCycle() {
+            if(!gameState.breathing) return;
+            breathingActive = true; document.getElementById('breathingBtn').textContent = 'Stop';
+            const text = document.getElementById('breathingText'), circle = document.getElementById('breathingCircle');
+            const p = gameState.breathing;
+            const phases = [];
+            if (p.inhale) phases.push({ text: 'Inhale...', duration: p.inhale * 1000, class: 'inhale' });
+            if (p.hold) phases.push({ text: 'Hold...', duration: p.hold * 1000, class: 'inhale' });
+            if (p.exhale) phases.push({ text: 'Exhale...', duration: p.exhale * 1000, class: 'exhale' });
+            if (p.hold_empty) phases.push({ text: 'Hold Empty', duration: p.hold_empty * 1000, class: '' });
+            let i=0;
+            const doPhase = () => {
+                if(!breathingActive) return;
+                const phase = phases[i % phases.length];
+                text.textContent = phase.text; circle.className = `breathing-circle ${phase.class}`;
+                breathingInterval = setTimeout(() => { i++; doPhase(); }, phase.duration);
+            };
+            doPhase();
+        }
+        function stopBreathing() {
+            breathingActive = false; clearInterval(breathingInterval);
+            document.getElementById('breathingBtn').textContent = 'Start';
+            document.getElementById('breathingText').textContent = 'Finished';
+            document.getElementById('breathingCircle').className = 'breathing-circle';
+        }
+        async function startMeditation() {
+            const area = document.getElementById('relaxationArea');
+            area.innerHTML = `<div class="loading"></div>`;
+            try {
+                const data = await apiFetch('/relaxation/meditation', { body: JSON.stringify({ exercise_type: 'healing' }) });
+                area.innerHTML = `<div class="breathing-exercise"><h3 style="color:#e84393;">${data.theme} Meditation</h3><div class="story-text" style="text-align:center;">${data.script_segments.map(s=>`<p style="margin-bottom:1rem;">${s}</p>`).join('')}<br><p><strong>${data.completion_affirmation}</strong></p></div></div>`;
+            } catch(e) { area.innerHTML = `<p>Error loading meditation.</p>`}
+        }
+        async function startNatureSounds() {
+            const area = document.getElementById('relaxationArea');
+            area.innerHTML = `<div class="loading"></div>`;
+            try {
+                const data = await apiFetch('/relaxation/nature-sounds', { method: 'GET' });
+                area.innerHTML = `<div class="breathing-exercise"><h3 style="color:#e84393;">Nature Soundscapes</h3><div class="story-text">${data.nature_sounds.map(s => `<div><h4>${s.name}</h4><p>${s.description}<br><em>Visualize: ${s.visualization}</em></p></div><hr style="margin:1rem 0;">`).join('')}</div></div>`;
+            } catch(e) { area.innerHTML = `<p>Error loading sounds.</p>`}
+        }
+    </script>
+</body>
+</html>

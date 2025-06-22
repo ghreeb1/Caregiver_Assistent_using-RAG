@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caregiver Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh; color: #333; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1rem 2rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); }
+        .header-content { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 1.8rem; display: flex; align-items: center; gap: 10px; }
+        .nav-links { display: flex; gap: 1rem; }
+        .nav-btn { background: rgba(255, 255, 255, 0.2); border: none; color: white; padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; text-decoration: none; font-size: 0.9rem; }
+        .nav-btn:hover { background: rgba(255, 255, 255, 0.3); transform: translateY(-2px); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .tabs { display: flex; background: white; border-radius: 15px; padding: 0.5rem; margin-bottom: 2rem; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); }
+        .tab-btn { flex: 1; background: transparent; border: none; padding: 1rem; border-radius: 10px; cursor: pointer; transition: all 0.3s ease; font-size: 1rem; font-weight: 500; }
+        .tab-btn.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); }
+        .tab-content { display: none; animation: fadeIn 0.5s ease-in; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .metric-card { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); text-align: center; transition: transform 0.3s ease; }
+        .metric-card:hover { transform: translateY(-5px); }
+        .metric-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+        .metric-value { font-size: 2rem; font-weight: bold; color: #667eea; margin-bottom: 0.5rem; }
+        .metric-label { color: #718096; font-size: 0.9rem; }
+        .activity-section { background: white; border-radius: 15px; padding: 2rem; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); margin-bottom: 2rem; }
+        .activity-section h3 { color: #4a5568; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; font-size: 1.25rem; }
+        .activity-item { background: #f7fafc; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; border-left: 4px solid #667eea; }
+        .activity-time { color: #718096; font-size: 0.9rem; margin-bottom: 0.5rem; }
+        .med-form { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+        .med-form select, .med-form input { flex: 1; padding: 0.75rem; border: 2px solid #e2e8f0; border-radius: 25px; outline: none; transition: border-color 0.3s ease; min-width: 150px; }
+        .med-form select:focus, .med-form input:focus { border-color: #667eea; }
+        .med-form .log-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 25px; cursor: pointer; transition: transform 0.2s ease; }
+        .med-form .log-btn:hover { transform: scale(1.05); }
+        .status-indicator { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; }
+        .status-online { background: #48bb78; box-shadow: 0 0 10px rgba(72, 187, 120, 0.5); }
+        .status-warning { background: #ed8936; box-shadow: 0 0 10px rgba(237, 137, 54, 0.5); }
+        .status-offline { background: #e53e3e; box-shadow: 0 0 10px rgba(229, 62, 62, 0.5); }
+        /* AI Insights CSS */
+        .ai-insights-section h3 { display: flex; justify-content: space-between; align-items: center; }
+        .ai-generate-btn { background: transparent; border: 2px solid #667eea; color: #667eea; padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem; font-weight: 500; }
+        .ai-generate-btn:hover { background: #667eea; color: white; }
+        .ai-report-container { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1.5rem; margin-top: 1.5rem; display: none; }
+        .ai-report-container h4 { margin-bottom: 1rem; color: #4a5568; }
+        .ai-summary { margin-bottom: 1rem; line-height: 1.6; }
+        .ai-recommendations { list-style: none; padding: 0; }
+        .ai-recommendations li { background: white; padding: 0.75rem; border-radius: 8px; margin-bottom: 0.5rem; border-left: 3px solid #667eea; }
+        .loader-container { text-align: center; padding: 2rem; display: none; }
+        .loader { border: 5px solid #f3f3f3; border-top: 5px solid #667eea; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .risk-level { padding: 4px 12px; border-radius: 15px; font-size: 0.9rem; font-weight: bold; color: white; }
+        .risk-low { background-color: #48bb78; }
+        .risk-medium { background-color: #ed8936; }
+        .risk-high { background-color: #e53e3e; }
+        @media (max-width: 768px) { .container { padding: 1rem; } .header-content { flex-direction: column; gap: 1rem; } .dashboard-grid { grid-template-columns: 1fr; } .tabs { flex-direction: column; } .nav-links { flex-wrap: wrap; justify-content: center; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>👩‍⚕️ Caregiver Dashboard</h1>
+            <div class="nav-links">
+                <a href="#" class="nav-btn">🏠 Home</a>
+                <a href="#" class="nav-btn">👤 Patient View</a>
+                <button class="nav-btn" onclick="refreshData()">🔄 Refresh</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab(event, 'dashboard')">📊 Dashboard</button>
+            <button class="tab-btn" onclick="switchTab(event, 'medications')">💊 Medication Log</button>
+            <button class="tab-btn" onclick="switchTab(event, 'camera')">📹 Camera (Demo)</button>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="dashboard-grid">
+                <div class="metric-card"><div class="metric-icon">💬</div><div class="metric-value" id="daily-chats">-</div><div class="metric-label">Daily Chats</div></div>
+                <div class="metric-card"><div class="metric-icon">🎮</div><div class="metric-value" id="games-played">-</div><div class="metric-label">Games Played</div></div>
+                <div class="metric-card"><div class="metric-icon">🧠</div><div class="metric-value" id="memory-responses">-</div><div class="metric-label">Memory Responses</div></div>
+                <div class="metric-card"><div class="metric-icon">🎨</div><div class="metric-value" id="creative-activities">-</div><div class="metric-label">Creative Activities</div></div>
+            </div>
+
+            <div class="activity-section"><h3>📋 Patient Status</h3><div class="activity-item"><div class="activity-time">Last Activity</div><div id="last-activity"><span class="status-indicator status-offline"></span><span id="last-activity-text">No recent activity</span></div></div></div>
+            <div class="activity-section"><h3>😊 Recent Mood Reports</h3><div id="mood-reports"><div class="activity-item">No mood reports available</div></div></div>
+            <div class="activity-section"><h3>🧠 Memory Assessment</h3><div id="memory-assessments"><div class="activity-item">No memory assessments available</div></div></div>
+            
+            <!-- AI-Powered Insights Section -->
+            <div class="activity-section ai-insights-section"><h3><span>💡 AI-Powered Insights</span><button class="ai-generate-btn" onclick="generateAIReport()">Generate Report</button></h3><div id="ai-loader" class="loader-container"><div class="loader"></div><p>AI is analyzing patient data...</p></div><div id="ai-report" class="ai-report-container"><h4>AI Analysis Report</h4><p><strong>Status:</strong><span id="ai-risk-level" class="risk-level"></span></p><p class="ai-summary" id="ai-summary-text"></p><h4>Recommended Actions:</h4><ul class="ai-recommendations" id="ai-recommendations-list"></ul></div></div>
+        </div>
+        
+        <!-- Medication Log Tab -->
+        <div id="medications" class="tab-content"><div class="activity-section"><h3>⏰ Upcoming Medications</h3><div id="upcoming-meds"></div></div><div class="activity-section"><h3>✍️ Log a Medication Dose</h3><div class="med-form"><select id="med-name"></select><input type="text" id="med-notes" placeholder="Add notes (optional)"><button class="log-btn" onclick="logMedication()">Log Dose</button></div></div><div class="activity-section"><h3>📜 Medication History</h3><div id="med-history"></div></div></div>
+
+        <!-- Camera Tab -->
+        <div id="camera" class="tab-content"><div class="camera-container"><h3>📹 Live Camera Feed</h3><p>This is a placeholder for a real camera feed integration.</p></div></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:8000'; // FastAPI server URL
+        let currentTab = 'dashboard';
+
+        function switchTab(event, tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.currentTarget.classList.add('active');
+            currentTab = tabName;
+            refreshData(); // Load data for the newly active tab
+        }
+
+        async function loadDashboardData() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/dashboard`);
+                if (!response.ok) throw new Error('Failed to fetch dashboard data');
+                const data = await response.json();
+
+                document.getElementById('daily-chats').textContent = data.daily_chats;
+                document.getElementById('games-played').textContent = data.games_played;
+                document.getElementById('memory-responses').textContent = data.memory_responses;
+                document.getElementById('creative-activities').textContent = data.creative_activities;
+
+                if (data.last_chat_time) {
+                    const lastActivity = new Date(data.last_chat_time);
+                    const timeDiff = Date.now() - lastActivity.getTime();
+                    const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+                    const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+                    
+                    const statusIndicator = document.querySelector('#last-activity .status-indicator');
+                    const statusText = document.getElementById('last-activity-text');
+                    
+                    statusIndicator.className = 'status-indicator'; // Reset class
+                    if (hours < 2) {
+                        statusIndicator.classList.add('status-online');
+                        statusText.textContent = `${hours}h ${minutes}m ago - Active`;
+                    } else if (hours < 6) {
+                        statusIndicator.classList.add('status-warning');
+                        statusText.textContent = `${hours}h ${minutes}m ago - Check recommended`;
+                    } else {
+                        statusIndicator.classList.add('status-offline');
+                        statusText.textContent = `${hours}h ${minutes}m ago - Attention needed`;
+                    }
+                }
+                
+                const moodContainer = document.getElementById('mood-reports');
+                moodContainer.innerHTML = data.recent_moods.length ? data.recent_moods.map(mood => `<div class="activity-item"><div class="activity-time">${mood.time}</div><div>${mood.mood}</div></div>`).join('') : '<div class="activity-item">No mood reports available</div>';
+                
+                const memoryContainer = document.getElementById('memory-assessments');
+                memoryContainer.innerHTML = data.recent_memory.length ? data.recent_memory.map(memory => `<div class="activity-item"><div class="activity-time">${memory.time}</div><div>${memory.response}</div></div>`).join('') : '<div class="activity-item">No memory assessments available</div>';
+            
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                document.querySelector('#dashboard .dashboard-grid').innerHTML = `<p style="color:red; grid-column: 1 / -1;">Error: Could not connect to the backend server. Please ensure it's running.</p>`;
+            }
+        }
+        
+        async function loadMedicationData() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/medications`);
+                if (!response.ok) throw new Error('Failed to fetch medication data');
+                const data = await response.json();
+
+                const upcomingContainer = document.getElementById('upcoming-meds');
+                upcomingContainer.innerHTML = data.scheduled.length ? data.scheduled.map(med => `<div class="activity-item"><div class="activity-time">${med.time}</div><div><strong>${med.name}</strong> - ${med.dosage}</div></div>`).join('') : '<div class="activity-item">No scheduled medications.</div>';
+
+                const medSelect = document.getElementById('med-name');
+                medSelect.innerHTML = data.scheduled.map(med => `<option value="${med.name}">${med.name}</option>`).join('');
+
+                const historyContainer = document.getElementById('med-history');
+                historyContainer.innerHTML = data.history.length ? data.history.map(med => `<div class="activity-item"><div class="activity-time">${med.time}</div><div><strong>${med.name}</strong>${med.notes ? `<br><small>Notes: ${med.notes}</small>` : ''}</div></div>`).join('') : '<div class="activity-item">No medication history available.</div>';
+
+            } catch(error) {
+                console.error('Error loading medication data:', error);
+                document.getElementById('upcoming-meds').innerHTML = `<p style="color:red;">Error: Could not connect to the server.</p>`;
+            }
+        }
+        
+        async function logMedication() {
+            const medName = document.getElementById('med-name').value;
+            const medNotes = document.getElementById('med-notes').value;
+            
+            if (!medName) {
+                alert('Please select a medication.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/medications/log`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: medName, notes: medNotes })
+                });
+
+                if (!response.ok) throw new Error('Failed to log medication');
+
+                document.getElementById('med-notes').value = '';
+                await loadMedicationData(); // Refresh the list after logging
+            } catch (error) {
+                console.error('Error logging medication:', error);
+                alert('An error occurred while logging the medication.');
+            }
+        }
+        
+        async function generateAIReport() {
+            const loader = document.getElementById('ai-loader');
+            const reportContainer = document.getElementById('ai-report');
+            loader.style.display = 'block';
+            reportContainer.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/ai-insights`);
+                if (!response.ok) throw new Error('AI analysis failed');
+                const report = await response.json();
+                
+                document.getElementById('ai-risk-level').textContent = report.riskLevel;
+                document.getElementById('ai-risk-level').className = 'risk-level ' + report.riskClass;
+                document.getElementById('ai-summary-text').textContent = report.summary;
+                
+                const recommendationsList = document.getElementById('ai-recommendations-list');
+                recommendationsList.innerHTML = report.recommendations.map(rec => `<li>${rec}</li>`).join('');
+                
+            } catch (error) {
+                console.error('Error generating AI report:', error);
+                document.getElementById('ai-summary-text').textContent = "Could not generate AI report. Please check the server connection.";
+            } finally {
+                loader.style.display = 'none';
+                reportContainer.style.display = 'block';
+            }
+        }
+        
+        function refreshData() {
+            if (currentTab === 'dashboard') {
+                loadDashboardData();
+            } else if (currentTab === 'medications') {
+                loadMedicationData();
+            }
+        }
+
+        // Load data on initial page load
+        window.onload = () => {
+            loadDashboardData();
+        };
+
+        // Auto-refresh dashboard every 60 seconds
+        setInterval(() => {
+            if (document.visibilityState === 'visible' && currentTab === 'dashboard') {
+                loadDashboardData();
+            }
+        }, 60000);
+
+    </script>
+</body>
+</html>
